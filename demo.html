@@ -1,0 +1,46 @@
+<html>
+	<head>
+		<script type="text/javascript" src="lib/jquery-3.2.1.js"></script>
+<!-- OOJS UI -->
+		<script type="text/javascript" src="node_modules/oojs/dist/oojs.jquery.js"></script>
+		<script type="text/javascript" src="node_modules/oojs-ui/dist/oojs-ui-core.js"></script>
+		<script type="text/javascript" src="node_modules/oojs-ui/dist/oojs-ui-wikimediaui.js"></script>
+		<link rel="stylesheet" type="text/css" href="node_modules/oojs-ui/dist/oojs-ui-wikimediaui.css"/>
+<!-- REDUX -->
+		<script type="text/javascript" src="node_modules/redux/dist/redux.min.js"></script>
+		<script type="text/javascript" src="dist/redux.js"></script>
+<!-- REDUX DIFFER -->
+		<script type="text/javascript" src="dist/recursiveDiffer.js"></script>
+
+		<script>
+			$( document ).ready( function () {
+				var button = new OO.ui.ButtonWidget( {
+						label: 'Foo'
+					} );
+
+				$( '.wrapper' ).append( button.$element );
+
+				// // TESTING EVENTS FOR REDUX
+				// 	unsubscribe = diff.redux.store.subscribe( function () {
+				// 		console.log( diff.redux.store.getState() );
+				// 	} );
+				// console.log(diff.redux.store.getState());
+
+				// // Dispatch some actions
+				// diff.redux.store.dispatch(diff.redux.actions.addTodo('title 1', 'content 1', undefined, '1' ));
+				// diff.redux.store.dispatch(diff.redux.actions.addTodo('title 2', 'content 2', undefined, '2' ));
+				// diff.redux.store.dispatch(diff.redux.actions.addTodo('title 3', 'content 3', undefined, '3' ));
+				// diff.redux.store.dispatch(diff.redux.actions.toggleTodo(1));
+				// diff.redux.store.dispatch(diff.redux.actions.toggleTodo(2));
+				// diff.redux.store.dispatch(diff.redux.actions.setVisibilityFilter(diff.redux.VisibilityFilters.SHOW_COMPLETED));
+
+				// // Stop listening to state updates
+				// unsubscribe();
+			} );
+		</script>
+	</head>
+<body>
+	<h1>OOJS-UI with Redux</h1>
+	<div class='wrapper'></div>
+</body>
+</html>
