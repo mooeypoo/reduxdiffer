@@ -2,9 +2,15 @@ import { createStore } from 'redux'
 import * as reducers from './redux/reducers'
 import * as actions from './redux/actions';
 import { VisibilityFilters } from './redux/constants.visibilityFilters';
-import ReduxStoreDiffer from './ReduxStoreDiffer'
+import { ReduxStoreDiffer } from './ReduxStoreDiffer'
 
-export default class Controller {
+/**
+ * An abstraction layer for widgets to use without referring to
+ * the underlying structure for reference.
+ *
+ * @class
+ */
+export class Controller {
 	constructor() {
 		this.store = createStore( reducers.todoApp );
 		this.differ = new ReduxStoreDiffer( this.store );
@@ -12,41 +18,98 @@ export default class Controller {
 
 	/* Registration for events */
 
-	subscribe( widget, path ) {
-		this.differ.subscribe( widget, path );
+	/**
+	 * Subscribe a widget to the differ change when
+	 * a specific state path changed
+	 *
+	 * @param  {Object} widget Subscribed widget
+	 * @param  {string[]} path Path to subscribe to
+	 * @param  {Mixed[]}  [params=[]] Optional method parameters
+	 */
+	subscribe( widget, path, method, params = [] ) {
+		this.differ.subscribe( widget, path, method, params = [] );
 	}
 
+	/**
+	 * Unsubscribe a widget from a differ change on a given
+	 * path
+	 *
+	 * @param  {Object} widget Subscribed widget
+	 * @param  {string[]} path Path to subscribe to
+	 */
 	unsubscribe( widget, path ) {
 		this.differ.unsubscribe( widget, path );
 	}
 
 	/* Actual actions for the UI */
-	addTodo( title = '', content = '' ) {
+
+	/**
+	 * Add a todo item
+	 *
+	 * @param {String} [id='']      [description]
+	 * @param {String} [title='']   [description]
+	 * @param {String} [content=''] [description]
+	 */
+	addTodo( id = '', title = '', content = '' ) {
 		const created = Date.now(),
-			id = created + Math.random();
+			state = this.store.getState();
+		id = id || created + Math.random();
+
+		// Do not add duplicate ID
+		if ( state.items[ id ] ) {
+			return;
+		}
+
+		title = title || 'item ' + id;
 
 		this.store.dispatch(
 			actions.addTodo(
 				title,
 				content,
-				Date.now(),
+				created,
 				id
 			)
 		);
 	}
 
+	/**
+	 * Toggle the complete status of an item
+	 *
+	 * @param  {[type]} id [description]
+	 * @return {[type]}    [description]
+	 */
 	toggleTodo( id ) {
 		this.store.dispatch(
 			actions.toggleTodo( id )
 		);
 	}
 
+	/**
+	 * Toggle the starred state of an item
+	 *
+	 * @param  {[type]} id [description]
+	 * @return {[type]}    [description]
+	 */
 	toggleStarTodo( id ) {
+		// Validate ID
+		const state = this.store.getState();
+
+		if ( Object.keys( state.items ).indexOf( id ) === -1 ) {
+			// Item doesn't exist
+			return;
+		}
+
 		this.store.dispatch(
 			actions.toggleStarTodo( id )
 		);
 	}
 
+	/**
+	 * Change visibility filter
+	 *
+	 * @param {String} [filter='all'] Visibility filter
+	 *  representation: 'all', 'completed', 'ongoing'
+	 */
 	setVisibilityFilter( filter = 'all' ) {
 		const map = {
 			'all': VisibilityFilters.SHOW_ALL,
@@ -64,4 +127,21 @@ export default class Controller {
 		);
 	}
 
+	/**
+	 * For tests, return the store
+	 *
+	 * @return {Resux.store} Store
+	 */
+	getStore() {
+		return this.store
+	}
+
+	/**
+	 * For tests, return the current state
+	 *
+	 * @return {Object} Current state
+	 */
+	getState() {
+		return this.store.getState()
+	}
 }

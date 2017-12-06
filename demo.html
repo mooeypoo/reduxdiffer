@@ -6,36 +6,44 @@
 		<script type="text/javascript" src="node_modules/oojs-ui/dist/oojs-ui-core.js"></script>
 		<script type="text/javascript" src="node_modules/oojs-ui/dist/oojs-ui-wikimediaui.js"></script>
 		<link rel="stylesheet" type="text/css" href="node_modules/oojs-ui/dist/oojs-ui-wikimediaui.css"/>
-<!-- REDUX -->
+<!-- REDUX + DIFFER -->
 		<script type="text/javascript" src="node_modules/redux/dist/redux.min.js"></script>
 		<script type="text/javascript" src="dist/redux.js"></script>
-<!-- REDUX DIFFER -->
-		<script type="text/javascript" src="dist/recursiveDiffer.js"></script>
 
 		<script>
 			$( document ).ready( function () {
-				var button = new OO.ui.ButtonWidget( {
-						label: 'Foo'
-					} );
+				var initialState = diff.reduxController.getState(),
+					visibilityButton = new OO.ui.ButtonWidget( {
+						label: 'Visibility: ' + initialState.visibilityFilter
+					} ),
+					visibilityFilterNames = [ 'all', 'completed', 'ongoing' ]
+					filterIndex = 1;
 
-				$( '.wrapper' ).append( button.$element );
+				// HACK: This is just for a quick test to see if we can get the button
+				// to update itself properly on state changes
+				visibilityButton.updateLabel = function () {
+					this.setLabel( 'Visibility: ' + diff.reduxController.getState().visibilityFilter )
+				}
 
-				// // TESTING EVENTS FOR REDUX
-				// 	unsubscribe = diff.redux.store.subscribe( function () {
-				// 		console.log( diff.redux.store.getState() );
-				// 	} );
-				// console.log(diff.redux.store.getState());
+				// Register the button for changes in visibilityFilter
+				diff.reduxController.subscribe(
+					visibilityButton,
+					[ 'visibilityFilter'],
+					'updateLabel' // Method
+				);
 
-				// // Dispatch some actions
-				// diff.redux.store.dispatch(diff.redux.actions.addTodo('title 1', 'content 1', undefined, '1' ));
-				// diff.redux.store.dispatch(diff.redux.actions.addTodo('title 2', 'content 2', undefined, '2' ));
-				// diff.redux.store.dispatch(diff.redux.actions.addTodo('title 3', 'content 3', undefined, '3' ));
-				// diff.redux.store.dispatch(diff.redux.actions.toggleTodo(1));
-				// diff.redux.store.dispatch(diff.redux.actions.toggleTodo(2));
-				// diff.redux.store.dispatch(diff.redux.actions.setVisibilityFilter(diff.redux.VisibilityFilters.SHOW_COMPLETED));
+				// Register button click event to change the state
+				visibilityButton.on( 'click', function () {
+					console.log( 'visibilityButton click', visibilityFilterNames[ filterIndex ]);
+					diff.reduxController.setVisibilityFilter( visibilityFilterNames[ filterIndex ] );
 
-				// // Stop listening to state updates
-				// unsubscribe();
+					// For demo purposes, rotate around the values
+					filterIndex = ( filterIndex + 1 ) % visibilityFilterNames.length;
+				} );
+
+				// Attach to DOM
+				$( '.wrapper' ).append( visibilityButton.$element );
+				console.log( 'initialState', initialState );
 			} );
 		</script>
 	</head>

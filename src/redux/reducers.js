@@ -3,11 +3,11 @@ import * as actionTypes from './constants.actions';
 const { SHOW_ALL } = VisibilityFilters;
 
 const initialState = {
-	visibilityFilter: VisibilityFilters.SHOW_ALL,
-	items: {},
-	starred: []
-}
-const initialItemState = initialState.items;
+		visibilityFilter: VisibilityFilters.SHOW_ALL,
+		items: {},
+		starred: []
+	},
+	initialItemState = initialState.items;
 
 
 /**
@@ -21,8 +21,7 @@ export function todoApp( state = initialState, action ) {
 	return {
 		visibilityFilter: visibilityReducer( state.visibilityFilter, action ),
 		items: itemsReducer( state.items, action ),
-		starred: []
-		// starred: starredReducer( state.starred, action )
+		starred: starredReducer( state.starred, action )
 	};
 }
 
@@ -81,5 +80,29 @@ export function itemsReducer( itemsState = initialItemState, action ) {
 			);
 		default:
 			return itemsState;
+	}
+}
+
+/**
+ * Starred reducer
+ * @param  {string[]}  [starredState=[]] [description]
+ * @param  {Object} action Action definition
+ * @return {string[]} New state
+ */
+export function starredReducer( starredState = [], action ) {
+	switch ( action.type ) {
+		case actionTypes.TOGGLE_STAR_TODO:
+			if ( starredState.indexOf( action.id ) > -1 ) {
+				// Exists in the list, toggle it off
+				return [ ...starredState ].filter( function ( id ) {
+					return id !== action.id
+				} )
+			}
+			return [
+				...starredState,
+				action.id
+			]
+		default:
+			return starredState
 	}
 }

@@ -1,18 +1,24 @@
-import recursiveDiffer from './recursiveDiffer'
+import { recursiveDiffer } from './recursiveDiffer'
 
-export default class ReduxStoreDiffer {
+/**
+ * Registers widgets and notifies them when there are changes
+ * to the specific parts of the store that they listen to.
+ *
+ * @class
+ */
+export class ReduxStoreDiffer {
 	constructor( store ) {
-		const subscribeCallback;
-
 		this.store = store;
 		this.currentState = this.store.getState();
 		this.subscriptions = {};
-		unsubscribe = differStore.subscribe(() =>
-			console.log(differStore.getState())
-			respondToChange()
-		)
+		this.subscribeCallback = this.store.subscribe(() => { this.respondToChange() } )
+console.log( 'ReduxStoreDiffer initialized' );
 	}
 
+	/**
+	 * Respond to state change and invoke the methods in the widgets that
+	 * registered to the paths changed
+	 */
 	respondToChange() {
 			// Check diff between old and new
 			let runCounter = 0;
@@ -20,18 +26,26 @@ export default class ReduxStoreDiffer {
 					this.currentState,
 					this.store.getState()
 			)
-
-			paths.forEach( function ( path ) {
-				let registeredWidgets,
-					workingPath = path.slice( 0 );
+console.log( 'respondToChange', this.currentState, this.store.getState(), paths );
+			paths.forEach( ( path ) => {
+				let workingPath = path.slice( 0 );
 
 				while ( workingPath.length ) {
-					registeredWidgets = this.getSubscriptionsForPath( workingPath );
 
 					// Trigger method
-					this.getSubscriptionsForPath( workingPath ).forEach( function ( definition ) {
-						definition.widget[ definition.method ]();
-						runCounter++
+					this.getSubscriptionsForPath( workingPath ).forEach( ( definition ) => {
+						if ( typeof definition.widget[ definition.method ] === 'function' ) {
+							definition.widget[ definition.method ].apply( definition.widget, definition.params );
+							console.log(
+								'> ReduxStoreDiffer: Ran',
+								definition.method,
+								'in widget',
+								definition.widget,
+								'with params',
+								definition.params
+							);
+							runCounter++
+						}
 					} );
 
 					// Go up in the path
@@ -39,19 +53,35 @@ export default class ReduxStoreDiffer {
 				}
 			} );
 
-			console.log( 'Ran ' + runCounter + ' methods for widgets' );
+			// Update current state
+			this.currentState = this.store.getState();
 	}
 
-	subscribe( widget, path, method = 'onChange' ) {
-		const pathString = Array.isArray( path ) ? path.join( '.' ) : path;
+	/**
+	 * Subscribe a widget to a state path
+	 *
+	 * @param  {Object} widget Subscribed widget
+	 * @param  {Array} path Subscribed store path to listen to
+	 * @param  {string} [method='onChange'] Method to invoke in the widget
+	 * @param  {Array}  [params=[]] Optional parameters to send to the widget method
+	 */
+	subscribe( widget, path, method = 'onChange', params = [] ) {
+		const pathString = this.stringifyPath( path );
 
 		this.subscriptions[ pathString ] = this.subscriptions[ pathString ] || [];
 		this.subscriptions[ pathString ].push( {
 			widget,
-			method
+			method,
+			params
 		} );
 	}
 
+	/**
+	 * Unsubscribe a widget from a state path
+	 *
+	 * @param  {Object} widget Subscribed widget
+	 * @param  {string[]} path Store path to unsubscribe from
+	 */
 	unsubscribe( widget, path ) {
 		const registeredWidgets = this.getSubscriptionsForPath( path );
 
@@ -65,8 +95,24 @@ export default class ReduxStoreDiffer {
 		}
 	}
 
+	/**
+	 * Get a string representation of the given path array
+	 *
+	 * @param  {string[]}  [path=[]] Path array
+	 * @return {string} Stringified path
+	 */
+	stringifyPath( path = [] ) {
+		return Array.isArray( path ) ? path.join( '.' ) : path;
+	}
+
+	/**
+	 * Get an array of all widget and their datas that have subscribed to
+	 * a specific path
+	 *
+	 * @param  {string[]}  [path=[]] Path array
+	 * @return {Object[]} An array of widgets and data
+	 */
 	getSubscriptionsForPath( path = [] ) {
-		const pathString = Array.isArray( path ) ? path.join( '.' ) : path,
-			return this.subscriptions[ pathString ] || [];
+		return this.subscriptions[ this.stringifyPath( path ) ] || [];
 	}
 }

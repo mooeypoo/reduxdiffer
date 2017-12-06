@@ -1,10 +1,6 @@
-// jest.dontMock( 'jquery' );
-// const $ = require( 'jquery' );
-// const recursiveDiffer = require( '../dist/recursiveDiffer.js' );
-// import * from '../src/recursiveDiffer';
 import { recursiveDiffer } from '../src/recursiveDiffer'
 
-describe( 'ReduxDiffer', () => {
+describe( 'recursiveDiffer', () => {
 	it( 'Correctly represents the diff in before/after states', () => {
 		const cases = [
 			{
