@@ -117,23 +117,19 @@ export class Controller {
 	/**
 	 * Change visibility filter
 	 *
-	 * @param {String} [filter='all'] Visibility filter
+	 * @param {String} [filter='SHOW_ALL'] Visibility filter
 	 *  representation: 'all', 'completed', 'ongoing'
 	 */
-	setVisibilityFilter( filter = 'all' ) {
-		const map = {
-			'all': VisibilityFilters.SHOW_ALL,
-			'completed': VisibilityFilters.SHOW_COMPLETED,
-			'ongoing': VisibilityFilters.SHOW_ONGOING
-		};
+	setVisibilityFilter( filter = 'SHOW_ALL' ) {
+		const allowed = Object.keys( VisibilityFilters );
 
-		if ( Object.keys( map).indexOf( filter ) === -1 ) {
+		if ( allowed.indexOf( filter ) === -1 ) {
 			// If filter isn't recognized, normalize to default
-			filter = 'all';
+			filter = 'SHOW_ALL';
 		}
 
 		this.store.dispatch(
-			actions.setVisibilityFilter( map[ filter ] )
+			actions.setVisibilityFilter( filter )
 		);
 	}
 

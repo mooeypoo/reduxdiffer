@@ -46,7 +46,10 @@ module.exports = function ( grunt ) {
 		},
 		concat: {
 			widgets: {
-				src: [ 'src/ooui/*.js', 'src/ooui/**/*.js' ],
+				src: [
+					'src/ooui/diff.ui.js',
+					'src/ooui/widgets/*.js'
+				],
 				dest: 'dist/ooui-widgets.js'
 			}
 		},

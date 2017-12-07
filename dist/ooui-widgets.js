@@ -1,6 +1,171 @@
 window.diff = window.diff || {};
 window.diff.ui = window.diff.ui || {};
 
+diff.ui.ActionWidget = function DiffUiActionWidget( controller, config ) {
+	config = config || {};
+
+	// Parent constructor
+	diff.ui.ActionWidget.parent.call( this, config );
+
+	this.controller = controller;
+
+	this.filterSelectWidget = new OO.ui.ButtonSelectWidget( {
+		items: [
+			new OO.ui.ButtonOptionWidget( {
+				data: 'SHOW_ALL',
+				label: 'All'
+			} ),
+			new OO.ui.ButtonOptionWidget( {
+				data: 'SHOW_ONGOING',
+				label: 'Ongoing'
+			} ),
+			new OO.ui.ButtonOptionWidget( {
+				data: 'SHOW_COMPLETED',
+				label: 'Completed'
+			} )
+		],
+		classes: [ 'diff-ui-actionWidget-filterSelect' ]
+	} );
+
+	this.filterSelectWidget.connect( this, { choose: 'onFilterSelectChoose' } );
+	this.$element
+		.addClass( 'diff-ui-actionWidget' )
+		.append( this.filterSelectWidget.$element );
+
+	this.update();
+};
+
+OO.inheritClass( diff.ui.ActionWidget, OO.ui.Widget );
+
+diff.ui.ActionWidget.prototype.onFilterSelectChoose = function ( item ) {
+	var data = item.getData();
+
+	this.controller.setVisibilityFilter( data );
+};
+
+diff.ui.ActionWidget.prototype.update = function () {
+	var state = this.controller.getState( [ 'visibilityFilter' ] );
+
+	this.filterSelectWidget.selectItem(
+		this.filterSelectWidget.getItemFromData( state )
+	);
+};
+
+diff.ui.AddTaskWidget = function DiffUiAddTaskWidget( controller, config ) {
+	config = config || {};
+
+	// Parent constructor
+	diff.ui.AddTaskWidget.parent.call( this, config );
+
+	this.controller = controller;
+
+	this.titleInput = new OO.ui.TextInputWidget( {
+		placeholder: 'Title',
+		classes: [ 'diff-ui-addTaskWidget-title' ]
+	} );
+
+	this.contentInput = new OO.ui.MultilineTextInputWidget( {
+		placeholder: 'Content',
+		classes: [ 'diff-ui-addTaskWidget-content' ]
+	} );
+
+	this.submitButton = new OO.ui.ButtonWidget( {
+		label: 'Add task',
+		classes: [ 'diff-ui-addTaskWidget-actions-submit' ],
+		flags: [ 'constructive', 'primary' ],
+		disabled: true
+	} );
+
+	this.resetButton = new OO.ui.ButtonWidget( {
+		label: 'Add task',
+		classes: [ 'diff-ui-addTaskWidget-actions-reset' ],
+		flags: [ 'destructive' ]
+	} );
+
+	// Events
+	this.titleInput.connect( this, { change: 'onTitleInputChange' } );
+	this.submitButton.connect( this, { click: 'onSubmitButtonClick' } );
+	this.resetButton.connect( this, { click: 'reset' } );
+
+	this.$element
+		.addClass( 'diff-ui-addTaskWidget' )
+		.append(
+			this.titleInput.$element,
+			this.contentInput.$element,
+			$( '<div>' )
+				.addClass( 'diff-ui-addTaskWidget-actions' )
+				.append(
+					this.resetButton.$element,
+					this.submitButton.$element
+				)
+		)
+};
+
+/* Initialization */
+OO.inheritClass( diff.ui.AddTaskWidget, OO.ui.Widget );
+
+/**
+ * Respond to change event
+ * @param  {[type]} text Current value of the input
+ * @return {[type]}      [description]
+ */
+diff.ui.AddTaskWidget.prototype.onTitleInputChange = function ( text ) {
+	this.submitButton.setDisabled(
+		!this.titleInput.getValue().trim()
+	);
+};
+
+diff.ui.AddTaskWidget.prototype.onSubmitButtonClick = function () {
+	var id = Date.now() + Math.floor( Math.random() * 11 );
+
+	this.controller.addTodo(
+		id,
+		this.titleInput.getValue(),
+		this.contentInput.getValue()
+	);
+
+	this.reset();
+};
+
+diff.ui.AddTaskWidget.prototype.reset = function () {
+	this.titleInput.setValue( '' );
+	this.contentInput.setValue( '' );
+	this.submitButton.setDisabled( true );
+};
+
+diff.ui.StateDisplayWidget = function DiffUiTaskItemWidet( controller, config ) {
+	config = config || {};
+
+	// Parent constructor
+	diff.ui.StateDisplayWidget.parent.call( this, config );
+	OO.ui.mixin.LabelElement.call( this, $.extend( {
+		$label: $( '<pre>' )
+	}, config ) );
+
+	this.controller = controller;
+
+	// Suscribe to state change
+	this.controller.subscribe(
+		this,
+		[ '*' ], // Path
+		'update' // Method
+	);
+
+	this.$element
+		.addClass( 'diff-ui-stateDisplayWidget' )
+		.append( this.$label );
+};
+
+/* Initialization */
+OO.inheritClass( diff.ui.StateDisplayWidget, OO.ui.Widget );
+OO.mixinClass( diff.ui.StateDisplayWidget, OO.ui.mixin.LabelElement );
+
+diff.ui.StateDisplayWidget.prototype.update = function () {
+	this.setLabel(
+		JSON.stringify( this.controller.getState(), null, '\t' )
+	);
+};
+
 diff.ui.TaskGroupWidget = function DiffUiTaskGroupWidet( controller, config ) {
 	config = config || {};
 
@@ -17,6 +182,11 @@ diff.ui.TaskGroupWidget = function DiffUiTaskGroupWidet( controller, config ) {
 		[ 'items' ], // Path
 		'update' // Method
 	);
+	this.controller.subscribe(
+		this,
+		[ 'visibleItems' ], // Path
+		'updateVisibility' // Method
+	);
 
 	this.$element
 		.addClass( 'diff-ui-taskGroupWidget' )
@@ -24,6 +194,7 @@ diff.ui.TaskGroupWidget = function DiffUiTaskGroupWidet( controller, config ) {
 
 	// Update based on initial state
 	this.update();
+	this.updateVisibility();
 };
 
 OO.inheritClass( diff.ui.TaskGroupWidget, OO.ui.Widget );
@@ -45,16 +216,27 @@ diff.ui.TaskGroupWidget.prototype.update = function () {
 
 	// Add items from the state if they don't already exist
 	$.each( state, function ( itemID ) {
+		var item;
 		if ( !widget.getItemFromData( itemID ) ) {
-			itemsToAdd.push(
-				new diff.ui.TaskItemWidget(
-					itemID,
-					widget.controller
-				)
+			item = new diff.ui.TaskItemWidget(
+				itemID,
+				widget.controller
 			);
+			item.toggle(
+				widget.controller.getState( [ 'visibilityFilter' ] ) !== 'SHOW_COMPLETED'
+			);
+			itemsToAdd.push( item );
 		}
 	} );
 	this.addItems( itemsToAdd );
+};
+
+diff.ui.TaskGroupWidget.prototype.updateVisibility = function () {
+	var visibleItems = this.controller.getState( [ 'visibleItems' ] );
+
+	this.getItems().forEach( function ( itemWidget ) {
+		itemWidget.toggle( visibleItems.indexOf( itemWidget.getID() ) !== -1 );
+	} );
 };
 
 diff.ui.TaskItemWidget = function DiffUiTaskItemWidet( id, controller, config ) {
@@ -75,18 +257,30 @@ diff.ui.TaskItemWidget = function DiffUiTaskItemWidet( id, controller, config ) 
 	this.toggleButton = new OO.ui.ButtonWidget( {
 		classes: [ 'diff-ui-taskItemWidget-toggleButton' ]
 	} );
+	this.starButton = new OO.ui.ButtonWidget( {
+		framed: false,
+		icon: 'star',
+		classes: [ 'diff-ui-taskItemWidget-starButton' ]
+	} );
 	this.removeButton = new OO.ui.ButtonWidget( {
-		classes: [ 'diff-ui-taskItemWidget-removeButton' ],
-		icon: 'close'
+		framed: false,
+		icon: 'close',
+		classes: [ 'diff-ui-taskItemWidget-removeButton' ]
 	} );
 	this.toggleButton.connect( this, { click: 'toggleDone' } );
 	this.removeButton.connect( this, { click: 'remove' } );
+	this.starButton.connect( this, { click: 'star' } );
 
 	// Suscribe to state change
 	this.controller.subscribe(
 		this,
 		[ 'items', this.id ], // Path
 		'update' // Method
+	);
+	this.controller.subscribe(
+		this,
+		[ 'starred' ], // Path
+		'updateStarred' // Method
 	);
 
 	this.$element
@@ -95,6 +289,7 @@ diff.ui.TaskItemWidget = function DiffUiTaskItemWidet( id, controller, config ) 
 			this.$icon
 				.addClass( 'diff-ui-taskItemWidget-icon' ),
 			this.removeButton.$element,
+			this.starButton.$element,
 			this.toggleButton.$element,
 			$( '<div>' )
 				.addClass( 'diff-ui-taskItemWidget-wrap' )
@@ -109,6 +304,7 @@ diff.ui.TaskItemWidget = function DiffUiTaskItemWidet( id, controller, config ) 
 	this.update();
 };
 
+/* Initialization */
 OO.inheritClass( diff.ui.TaskItemWidget, OO.ui.Widget );
 OO.mixinClass( diff.ui.TaskItemWidget, OO.ui.mixin.IconElement );
 OO.mixinClass( diff.ui.TaskItemWidget, OO.ui.mixin.LabelElement );
@@ -135,11 +331,21 @@ diff.ui.TaskItemWidget.prototype.update = function () {
 	);
 };
 
+diff.ui.TaskItemWidget.prototype.updateStarred = function () {
+	var state = this.controller.getState( [ 'starred' ] );
+	this.starButton.setIcon(
+		state.indexOf( this.id ) !== -1 ? 'unStar' : 'star'
+	);
+};
 /**
  * Toggle the complete status of this item
  */
 diff.ui.TaskItemWidget.prototype.toggleDone = function () {
 	this.controller.toggleTodo( this.id );
+};
+
+diff.ui.TaskItemWidget.prototype.star = function () {
+	this.controller.toggleStarTodo( this.id );
 };
 
 /**

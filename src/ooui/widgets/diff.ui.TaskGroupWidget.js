@@ -14,6 +14,11 @@ diff.ui.TaskGroupWidget = function DiffUiTaskGroupWidet( controller, config ) {
 		[ 'items' ], // Path
 		'update' // Method
 	);
+	this.controller.subscribe(
+		this,
+		[ 'visibleItems' ], // Path
+		'updateVisibility' // Method
+	);
 
 	this.$element
 		.addClass( 'diff-ui-taskGroupWidget' )
@@ -21,6 +26,7 @@ diff.ui.TaskGroupWidget = function DiffUiTaskGroupWidet( controller, config ) {
 
 	// Update based on initial state
 	this.update();
+	this.updateVisibility();
 };
 
 OO.inheritClass( diff.ui.TaskGroupWidget, OO.ui.Widget );
@@ -42,14 +48,25 @@ diff.ui.TaskGroupWidget.prototype.update = function () {
 
 	// Add items from the state if they don't already exist
 	$.each( state, function ( itemID ) {
+		var item;
 		if ( !widget.getItemFromData( itemID ) ) {
-			itemsToAdd.push(
-				new diff.ui.TaskItemWidget(
-					itemID,
-					widget.controller
-				)
+			item = new diff.ui.TaskItemWidget(
+				itemID,
+				widget.controller
 			);
+			item.toggle(
+				widget.controller.getState( [ 'visibilityFilter' ] ) !== 'SHOW_COMPLETED'
+			);
+			itemsToAdd.push( item );
 		}
 	} );
 	this.addItems( itemsToAdd );
+};
+
+diff.ui.TaskGroupWidget.prototype.updateVisibility = function () {
+	var visibleItems = this.controller.getState( [ 'visibleItems' ] );
+
+	this.getItems().forEach( function ( itemWidget ) {
+		itemWidget.toggle( visibleItems.indexOf( itemWidget.getID() ) !== -1 );
+	} );
 };

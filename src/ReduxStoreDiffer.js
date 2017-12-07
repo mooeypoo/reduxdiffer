@@ -19,37 +19,39 @@ export class ReduxStoreDiffer {
 	 * registered to the paths changed
 	 */
 	respondToChange() {
-			// Check diff between old and new
-			let runCounter = 0;
-			const paths = recursiveDiffer(
-					this.currentState,
-					this.store.getState()
-			)
+		// Check diff between old and new
+		let runCounter = 0;
+		const paths = [
+			...recursiveDiffer(
+				this.currentState,
+				this.store.getState()
+			),
+			[ '*' ] // Always notify widgets that asked for *
+		]
 // console.log(
 // 	'(ReduxStoreDiffer) State changed:',
 // 	paths,
 // 	this.currentState,
 // 	this.store.getState()
 // );
-			paths.forEach( ( path ) => {
-				let workingPath = path.slice( 0 );
+		paths.forEach( ( path ) => {
+			let workingPath = path.slice( 0 );
 
-				while ( workingPath.length ) {
+			while ( workingPath.length ) {
+				// Trigger method
+				this.getSubscriptionsForPath( workingPath ).forEach( ( definition ) => {
+					if ( typeof definition.widget[ definition.method ] === 'function' ) {
+						definition.widget[ definition.method ].apply( definition.widget, definition.params );
+					}
+				} );
 
-					// Trigger method
-					this.getSubscriptionsForPath( workingPath ).forEach( ( definition ) => {
-						if ( typeof definition.widget[ definition.method ] === 'function' ) {
-							definition.widget[ definition.method ].apply( definition.widget, definition.params );
-						}
-					} );
+				// Go up in the path
+				workingPath.pop();
+			}
+		} );
 
-					// Go up in the path
-					workingPath.pop();
-				}
-			} );
-
-			// Update current state
-			this.currentState = this.store.getState();
+		// Update current state
+		this.currentState = this.store.getState();
 	}
 
 	/**

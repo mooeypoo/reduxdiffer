@@ -4,9 +4,11 @@
 <!-- OOJS UI -->
 		<script type="text/javascript" src="node_modules/oojs/dist/oojs.jquery.js"></script>
 		<script type="text/javascript" src="node_modules/oojs-ui/dist/oojs-ui-core.js"></script>
+		<script type="text/javascript" src="node_modules/oojs-ui/dist/oojs-ui-widgets.js"></script>
 		<script type="text/javascript" src="node_modules/oojs-ui/dist/oojs-ui-wikimediaui.js"></script>
 		<link rel="stylesheet" type="text/css" href="node_modules/oojs-ui/dist/oojs-ui-wikimediaui.css"/>
 		<link rel="stylesheet" type="text/css" href="node_modules/oojs-ui/dist/oojs-ui-wikimediaui-icons-interactions.css"/>
+		<link rel="stylesheet" type="text/css" href="node_modules/oojs-ui/dist/oojs-ui-wikimediaui-icons-moderation.css"/>
 <!-- REDUX + DIFFER -->
 		<script type="text/javascript" src="node_modules/redux/dist/redux.min.js"></script>
 		<script type="text/javascript" src="dist/redux.js"></script>
@@ -16,21 +18,44 @@
 
 		<script>
 			$( document ).ready( function () {
-				var taskGroupWidget;
+				var taskGroupWidget = new diff.ui.TaskGroupWidget(
+						diff.reduxController
+					),
+					addTaskWidget = new diff.ui.AddTaskWidget(
+						diff.reduxController
+					),
+					actionWidget = new diff.ui.ActionWidget(
+						diff.reduxController
+					),
+					stateDisplayWidget = new diff.ui.StateDisplayWidget(
+						diff.reduxController
+					);
 
-				diff.reduxController.addTodo( '123', 'title123', 'content123' );
-
-				taskGroupWidget = new diff.ui.TaskGroupWidget(
-					diff.reduxController
-				);
+				diff.reduxController.addTodo( '123', 'Title 123', 'Content 123' );
+				diff.reduxController.addTodo( '234', 'Title 234', 'Content 234' );
+				diff.reduxController.addTodo( '345', 'Title 345', 'Content 345' );
 
 				// Attach to DOM
-				$( '.wrapper' ).append( taskGroupWidget.$element );
+
+
+
+				$( '.stateview' )
+					.append( stateDisplayWidget.$element );
+				$( '.wrapper' ).append(
+					addTaskWidget.$element,
+					actionWidget.$element,
+					taskGroupWidget.$element
+				);
 			} );
 		</script>
 	</head>
 <body>
 	<h1>OOJS-UI with Redux</h1>
-	<div class='wrapper'></div>
+	<div class="diff-ui-table">
+		<div class="diff-ui-row">
+			<div class="wrapper diff-ui-cell"></div>
+			<div class="stateview diff-ui-cell"></div>
+		</div>
+	</div>
 </body>
 </html>

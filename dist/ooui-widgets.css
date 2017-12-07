@@ -2,21 +2,46 @@ body {
   padding: 3em;
   font-size: 14px;
 }
+.wrapper {
+  width: 650px;
+}
+.diff-ui-table {
+  display: table;
+}
+.diff-ui-row {
+  display: table-row;
+}
+.diff-ui-cell {
+  display: table-cell;
+}
 .diff-ui-taskItemWidget {
+  position: relative;
+  margin: 1em 0;
   padding: 1em;
   background-color: #eee;
-  position: relative;
+  -webkit-box-shadow: 0 10px 6px -6px #ddd;
+  -moz-box-shadow: 0 10px 6px -6px #ddd;
+  box-shadow: 0 10px 6px -6px #ddd;
 }
+.diff-ui-taskItemWidget-completed {
+  border: 1px solid #eee;
+  background-color: #f7f7f7;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+}
+.diff-ui-taskItemWidget-completed .diff-ui-taskItemWidget-wrap {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+.diff-ui-taskItemWidget-starButton,
 .diff-ui-taskItemWidget-removeButton,
 .diff-ui-taskItemWidget-toggleButton {
   float: right;
 }
 .diff-ui-taskItemWidget-wrap {
   margin-left: 1.875em;
-}
-.diff-ui-taskItemWidget-completed .diff-ui-taskItemWidget-wrap {
-  opacity: 0.6;
-  text-decoration: line-through;
+  width: 70%;
 }
 .diff-ui-taskItemWidget-wrap-title {
   display: block;
@@ -25,4 +50,30 @@ body {
 }
 .diff-ui-taskItemWidget-wrap-content {
   display: block;
+}
+.diff-ui-taskGroupWidget {
+  margin-top: 2em;
+}
+.diff-ui-addTaskWidget {
+  position: relative;
+  border: 1px solid #ddd;
+  padding: 0.5em;
+}
+.diff-ui-addTaskWidget-title,
+.diff-ui-addTaskWidget-content {
+  margin-bottom: 0.5em;
+}
+.diff-ui-addTaskWidget-actions {
+  text-align: right;
+}
+.diff-ui-stateDisplayWidget {
+  width: 450px;
+  margin-left: 1em;
+  border: 1px solid #666;
+  background-color: #ccc;
+}
+.diff-ui-actionWidget {
+  margin-top: 1em;
+  display: block;
+  text-align: center;
 }

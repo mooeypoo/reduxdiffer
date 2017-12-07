@@ -5,6 +5,7 @@ describe( 'Controller', () => {
     let controller;
     const initialState = {
     	visibilityFilter: VisibilityFilters.SHOW_ALL,
+		visibleItems: [],
     	items: {},
     	starred: []
     }
@@ -79,13 +80,13 @@ describe( 'Controller', () => {
         // Initial/default
         expect( controller.getState().visibilityFilter ).toEqual( 'SHOW_ALL' );
 
-        controller.setVisibilityFilter( 'completed' )
+        controller.setVisibilityFilter( 'SHOW_COMPLETED' )
         expect( controller.getState().visibilityFilter ).toEqual( 'SHOW_COMPLETED' );
 
-        controller.setVisibilityFilter( 'all' )
+        controller.setVisibilityFilter( 'SHOW_ALL' )
         expect( controller.getState().visibilityFilter ).toEqual( 'SHOW_ALL' );
 
-        controller.setVisibilityFilter( 'ongoing' )
+        controller.setVisibilityFilter( 'SHOW_ONGOING' )
         expect( controller.getState().visibilityFilter ).toEqual( 'SHOW_ONGOING' );
 
         // Nonexisting value

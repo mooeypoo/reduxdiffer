@@ -1,5 +1,6 @@
 // var stateStructure = {
 // 	visibilityFilter: 'SHOW_ALL',
+// 	visibleItems: [],
 // 	items: {
 // 		123123rand: {
 // 			completed: false,

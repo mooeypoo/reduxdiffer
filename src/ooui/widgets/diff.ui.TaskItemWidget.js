@@ -16,18 +16,30 @@ diff.ui.TaskItemWidget = function DiffUiTaskItemWidet( id, controller, config ) 
 	this.toggleButton = new OO.ui.ButtonWidget( {
 		classes: [ 'diff-ui-taskItemWidget-toggleButton' ]
 	} );
+	this.starButton = new OO.ui.ButtonWidget( {
+		framed: false,
+		icon: 'star',
+		classes: [ 'diff-ui-taskItemWidget-starButton' ]
+	} );
 	this.removeButton = new OO.ui.ButtonWidget( {
-		classes: [ 'diff-ui-taskItemWidget-removeButton' ],
-		icon: 'close'
+		framed: false,
+		icon: 'close',
+		classes: [ 'diff-ui-taskItemWidget-removeButton' ]
 	} );
 	this.toggleButton.connect( this, { click: 'toggleDone' } );
 	this.removeButton.connect( this, { click: 'remove' } );
+	this.starButton.connect( this, { click: 'star' } );
 
 	// Suscribe to state change
 	this.controller.subscribe(
 		this,
 		[ 'items', this.id ], // Path
 		'update' // Method
+	);
+	this.controller.subscribe(
+		this,
+		[ 'starred' ], // Path
+		'updateStarred' // Method
 	);
 
 	this.$element
@@ -36,6 +48,7 @@ diff.ui.TaskItemWidget = function DiffUiTaskItemWidet( id, controller, config ) 
 			this.$icon
 				.addClass( 'diff-ui-taskItemWidget-icon' ),
 			this.removeButton.$element,
+			this.starButton.$element,
 			this.toggleButton.$element,
 			$( '<div>' )
 				.addClass( 'diff-ui-taskItemWidget-wrap' )
@@ -50,6 +63,7 @@ diff.ui.TaskItemWidget = function DiffUiTaskItemWidet( id, controller, config ) 
 	this.update();
 };
 
+/* Initialization */
 OO.inheritClass( diff.ui.TaskItemWidget, OO.ui.Widget );
 OO.mixinClass( diff.ui.TaskItemWidget, OO.ui.mixin.IconElement );
 OO.mixinClass( diff.ui.TaskItemWidget, OO.ui.mixin.LabelElement );
@@ -76,11 +90,21 @@ diff.ui.TaskItemWidget.prototype.update = function () {
 	);
 };
 
+diff.ui.TaskItemWidget.prototype.updateStarred = function () {
+	var state = this.controller.getState( [ 'starred' ] );
+	this.starButton.setIcon(
+		state.indexOf( this.id ) !== -1 ? 'unStar' : 'star'
+	);
+};
 /**
  * Toggle the complete status of this item
  */
 diff.ui.TaskItemWidget.prototype.toggleDone = function () {
 	this.controller.toggleTodo( this.id );
+};
+
+diff.ui.TaskItemWidget.prototype.star = function () {
+	this.controller.toggleStarTodo( this.id );
 };
 
 /**

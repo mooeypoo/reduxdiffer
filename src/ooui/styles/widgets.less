@@ -1,6 +1,28 @@
 body {
-    padding: 3em;
-    font-size: 14px;
+	padding: 3em;
+	font-size: 14px;
+}
+
+.wrapper {
+	width: 650px;
+}
+
+.diff-ui {
+	&-table {
+		display: table;
+	}
+
+	&-row {
+		display: table-row;
+	}
+
+	&-cell {
+		display: table-cell;
+	}
 }
 
 @import 'diff.ui.TaskItemWidget.less';
+@import 'diff.ui.TaskGroupWidget.less';
+@import 'diff.ui.AddTaskWidget.less';
+@import 'diff.ui.StateDisplayWidget.less';
+@import 'diff.ui.ActionWidget.less';
