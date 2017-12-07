@@ -1,0 +1,28 @@
+body {
+  padding: 3em;
+  font-size: 14px;
+}
+.diff-ui-taskItemWidget {
+  padding: 1em;
+  background-color: #eee;
+  position: relative;
+}
+.diff-ui-taskItemWidget-removeButton,
+.diff-ui-taskItemWidget-toggleButton {
+  float: right;
+}
+.diff-ui-taskItemWidget-wrap {
+  margin-left: 1.875em;
+}
+.diff-ui-taskItemWidget-completed .diff-ui-taskItemWidget-wrap {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+.diff-ui-taskItemWidget-wrap-title {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+}
+.diff-ui-taskItemWidget-wrap-content {
+  display: block;
+}

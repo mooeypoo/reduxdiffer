@@ -12,7 +12,6 @@ export class ReduxStoreDiffer {
 		this.currentState = this.store.getState();
 		this.subscriptions = {};
 		this.subscribeCallback = this.store.subscribe(() => { this.respondToChange() } )
-console.log( 'ReduxStoreDiffer initialized' );
 	}
 
 	/**
@@ -26,7 +25,12 @@ console.log( 'ReduxStoreDiffer initialized' );
 					this.currentState,
 					this.store.getState()
 			)
-console.log( 'respondToChange', this.currentState, this.store.getState(), paths );
+// console.log(
+// 	'(ReduxStoreDiffer) State changed:',
+// 	paths,
+// 	this.currentState,
+// 	this.store.getState()
+// );
 			paths.forEach( ( path ) => {
 				let workingPath = path.slice( 0 );
 
@@ -36,15 +40,6 @@ console.log( 'respondToChange', this.currentState, this.store.getState(), paths 
 					this.getSubscriptionsForPath( workingPath ).forEach( ( definition ) => {
 						if ( typeof definition.widget[ definition.method ] === 'function' ) {
 							definition.widget[ definition.method ].apply( definition.widget, definition.params );
-							console.log(
-								'> ReduxStoreDiffer: Ran',
-								definition.method,
-								'in widget',
-								definition.widget,
-								'with params',
-								definition.params
-							);
-							runCounter++
 						}
 					} );
 

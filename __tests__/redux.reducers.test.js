@@ -53,4 +53,35 @@ describe( 'items reducer', () => {
 			}
 		} );
 	} );
+
+	it( 'Removes a TODO item', () => {
+		expect( reducers.itemsReducer(
+			{
+				'123': {
+					completed: false,
+					created: '98765345',
+					title: 'test title',
+					content: ''
+				},
+				'234': {
+					completed: true,
+					created: '98745766',
+					title: 'test title 2',
+					content: 'some content'
+				}
+			},
+			{
+				type: actionTypes.REMOVE_TODO,
+				id: '123'
+			}
+		) )
+		.toEqual( {
+			'234': {
+				completed: true,
+				created: '98745766',
+				title: 'test title 2',
+				content: 'some content'
+			}
+		} );
+	} );
 } );

@@ -9,7 +9,8 @@ module.exports = function ( grunt ) {
 	// grunt.loadNpmTasks( 'grunt-eslint' );
 	// grunt.loadNpmTasks( 'grunt-jsonlint' );
 	// grunt.loadNpmTasks( 'grunt-stylelint' );
-	// grunt.loadNpmTasks( 'grunt-contrib-concat' );
+	grunt.loadNpmTasks( 'grunt-contrib-concat' );
+	grunt.loadNpmTasks( 'grunt-contrib-less' );
 	// grunt.loadNpmTasks( 'grunt-babel' );
 	grunt.loadNpmTasks( 'grunt-browserify' );
 
@@ -36,12 +37,19 @@ module.exports = function ( grunt ) {
 		// 		'!vendor/**'
 		// 	]
 		// },
-		// concat: {
-		// 	all: {
-		// 		src: [ 'src/*.js', 'src/**/*.js' ],
-		// 		dest: 'dist/reduxdiffer.js'
-		// 	}
-		// },
+		less: {
+			widgets: {
+				files: {
+					'dist/ooui-widgets.css': 'src/ooui/styles/widgets.less'
+				}
+			}
+		},
+		concat: {
+			widgets: {
+				src: [ 'src/ooui/*.js', 'src/ooui/**/*.js' ],
+				dest: 'dist/ooui-widgets.js'
+			}
+		},
 		browserify: {
 			redux: {
 				src: [
@@ -59,7 +67,9 @@ module.exports = function ( grunt ) {
 	} );
 
 	grunt.registerTask('default', [
-		'browserify:redux'
+		'browserify:redux',
+		'concat:widgets',
+		'less:widgets'
 	]);
 	// grunt.registerTask( 'default', [ 'eslint', 'stylelint', 'jsonlint', 'babel' ] );
 	// grunt.registerTask( 'default', [ 'build' ] );

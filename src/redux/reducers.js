@@ -49,7 +49,7 @@ export function visibilityReducer( visibilityState = SHOW_ALL, action ) {
  * @return {Object} New state
  */
 export function itemsReducer( itemsState = initialItemState, action ) {
-	let id, currItem, newItemData,
+	let id, currItem, newItemData, state,
 		newItem = {};
 
 	switch ( action.type ) {
@@ -64,6 +64,10 @@ export function itemsReducer( itemsState = initialItemState, action ) {
 			}
 
 			return Object.assign( {}, itemsState, newItem );
+		case actionTypes.REMOVE_TODO:
+			state = Object.assign( {}, itemsState );
+			delete state[ action.id ];
+			return state;
 		case actionTypes.TOGGLE_TODO:
 			currItem = itemsState[ action.id ];
 			newItemData = Object.assign(

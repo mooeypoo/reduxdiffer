@@ -10,6 +10,13 @@ export function addTodo( title, content, created, id ) {
 	};
 }
 
+export function removeTodo( id ) {
+	return {
+		type: types.REMOVE_TODO,
+		id
+	}
+}
+
 export function toggleTodo( id ) {
 	return {
 		type: types.TOGGLE_TODO,

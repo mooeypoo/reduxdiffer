@@ -73,6 +73,16 @@ export class Controller {
 	}
 
 	/**
+	 * Remove an item
+	 * @param {string} id Item ID
+	 */
+	removeTodo( id ) {
+		this.store.dispatch(
+			actions.removeTodo( id )
+		);
+	}
+
+	/**
 	 * Toggle the complete status of an item
 	 *
 	 * @param  {[type]} id [description]
@@ -130,18 +140,25 @@ export class Controller {
 	/**
 	 * For tests, return the store
 	 *
-	 * @return {Resux.store} Store
+	 * @return {Redux.store} Store
 	 */
 	getStore() {
 		return this.store
 	}
 
 	/**
-	 * For tests, return the current state
+	 * Return the current state, or a portion of it
 	 *
+	 * @param {string[]} Specified path to get the state of
 	 * @return {Object} Current state
 	 */
-	getState() {
-		return this.store.getState()
+	getState( path = [] ) {
+		const state = this.store.getState()
+		let result = state;
+
+		path.forEach( function ( piece ) {
+			result = result[ piece ]
+		} );
+		return result;
 	}
 }
