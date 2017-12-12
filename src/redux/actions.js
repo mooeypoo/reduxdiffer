@@ -24,6 +24,14 @@ export function toggleTodo( id ) {
 	};
 }
 
+export function reorderTodo( id, position ) {
+	return {
+		type: types.REORDER_TODO,
+		id,
+		position
+	};
+}
+
 export function toggleStarTodo( id ) {
 	return {
 		type: types.TOGGLE_STAR_TODO,

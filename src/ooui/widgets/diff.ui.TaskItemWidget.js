@@ -1,4 +1,6 @@
 diff.ui.TaskItemWidget = function DiffUiTaskItemWidet( id, controller, config ) {
+	var $handle = $( '<div>' )
+		.addClass( 'diff-ui-taskItemWidget-handle' );
 	config = config || {};
 
 	// Parent constructor
@@ -6,6 +8,7 @@ diff.ui.TaskItemWidget = function DiffUiTaskItemWidet( id, controller, config ) 
 	// Mixins
 	OO.ui.mixin.IconElement.call( this, config );
 	OO.ui.mixin.LabelElement.call( this, config );
+	OO.ui.mixin.DraggableElement.call( this, $.extend( { $handle: $handle }, config ) );
 
 	this.id = id;
 	this.controller = controller;
@@ -45,6 +48,7 @@ diff.ui.TaskItemWidget = function DiffUiTaskItemWidet( id, controller, config ) 
 	this.$element
 		.addClass( 'diff-ui-taskItemWidget' )
 		.append(
+			this.$handle,
 			this.$icon
 				.addClass( 'diff-ui-taskItemWidget-icon' ),
 			this.removeButton.$element,
@@ -61,12 +65,14 @@ diff.ui.TaskItemWidget = function DiffUiTaskItemWidet( id, controller, config ) 
 
 	// Update based on initial state
 	this.update();
+	this.updateStarred();
 };
 
 /* Initialization */
 OO.inheritClass( diff.ui.TaskItemWidget, OO.ui.Widget );
 OO.mixinClass( diff.ui.TaskItemWidget, OO.ui.mixin.IconElement );
 OO.mixinClass( diff.ui.TaskItemWidget, OO.ui.mixin.LabelElement );
+OO.mixinClass( diff.ui.TaskItemWidget, OO.ui.mixin.DraggableElement );
 
 /**
  * Update the widget

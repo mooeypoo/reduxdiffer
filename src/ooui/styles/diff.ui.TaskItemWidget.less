@@ -7,6 +7,19 @@
 	-moz-box-shadow: 0 10px 6px -6px #ddd;
 	box-shadow: 0 10px 6px -6px #ddd;
 
+	&-handle {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 20px;
+		height: 100%;
+		background-color: #333;
+	}
+
+	&-icon {
+		margin-left: 10px;
+	}
+
 	&-completed {
 		border: 1px solid #eee;
 		background-color: #f7f7f7;
@@ -27,7 +40,9 @@
 	}
 
 	&-wrap {
-		margin-left: 1.875em; // Icon width
+		// Icon width + icon margin + small margin
+		margin-left: calc( 1.875em ~"+" 10px ~"+" 0.5em );
+		// margin-left: ~"calc( 1.875em + 10px + 0.5em )";
 		width: 70%;
 		&-title {
 			display: block;

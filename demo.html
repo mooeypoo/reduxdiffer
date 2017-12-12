@@ -29,6 +29,9 @@
 					),
 					stateDisplayWidget = new diff.ui.StateDisplayWidget(
 						diff.reduxController
+					),
+					reorderWidget = new diff.ui.ReorderViewWidget(
+						diff.reduxController
 					);
 
 				diff.reduxController.addTodo( '123', 'Title 123', 'Content 123' );
@@ -36,9 +39,6 @@
 				diff.reduxController.addTodo( '345', 'Title 345', 'Content 345' );
 
 				// Attach to DOM
-
-
-
 				$( '.stateview' )
 					.append( stateDisplayWidget.$element );
 				$( '.wrapper' ).append(
@@ -46,6 +46,8 @@
 					actionWidget.$element,
 					taskGroupWidget.$element
 				);
+				$( '.panelview' )
+					.append( reorderWidget.$element );
 			} );
 		</script>
 	</head>
@@ -55,6 +57,7 @@
 		<div class="diff-ui-row">
 			<div class="wrapper diff-ui-cell"></div>
 			<div class="stateview diff-ui-cell"></div>
+			<div class="panelview diff-ui-cell"></div>
 		</div>
 	</div>
 </body>

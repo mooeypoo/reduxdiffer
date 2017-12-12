@@ -13,6 +13,7 @@ body {
 }
 .diff-ui-cell {
   display: table-cell;
+  vertical-align: top;
 }
 .diff-ui-taskItemWidget {
   position: relative;
@@ -22,6 +23,17 @@ body {
   -webkit-box-shadow: 0 10px 6px -6px #ddd;
   -moz-box-shadow: 0 10px 6px -6px #ddd;
   box-shadow: 0 10px 6px -6px #ddd;
+}
+.diff-ui-taskItemWidget-handle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 100%;
+  background-color: #333;
+}
+.diff-ui-taskItemWidget-icon {
+  margin-left: 10px;
 }
 .diff-ui-taskItemWidget-completed {
   border: 1px solid #eee;
@@ -40,7 +52,7 @@ body {
   float: right;
 }
 .diff-ui-taskItemWidget-wrap {
-  margin-left: 1.875em;
+  margin-left: calc(1.875em + 10px + 0.5em);
   width: 70%;
 }
 .diff-ui-taskItemWidget-wrap-title {
@@ -76,4 +88,7 @@ body {
   margin-top: 1em;
   display: block;
   text-align: center;
+}
+.diff-ui-reorderViewWidget-list .oo-ui-buttonWidget {
+  display: block;
 }

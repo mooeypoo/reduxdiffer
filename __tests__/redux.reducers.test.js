@@ -11,6 +11,7 @@ describe( 'app reducer', () => {
 				visibilityFilter: SHOW_ALL,
 				visibleItems: [],
 				items: {},
+				order: [],
 				starred: []
 			} );
 	} );
@@ -92,6 +93,7 @@ describe( 'visibleItems reducer', () => {
 	const mockState = {
 		visibilityFilter: 'SHOW_ALL',
 		visibleItems: [ '1', '2', '3', '4' ],
+		order: [],
 		items: {
 			'1': {
 				completed: false,
@@ -196,5 +198,49 @@ describe( 'visibleItems reducer', () => {
 		expect( reducers.visibleItemsReducer( Object.assign( {}, completedState ), actions.removeTodo( '4' ) ).sort() )
 			.toEqual( [ '2' ].sort() ); // Started with [ '2', '4' ]
 
+	} );
+} );
+
+describe( 'Order reducer', () => {
+	it( 'Returns initial state when none are given', () => {
+		expect( reducers.orderReducer( undefined, {} ) )
+			.toEqual( [] );
+	} );
+
+	it( 'Adds ids to the order sequentially when items are added', () => {
+		expect( reducers.orderReducer( undefined, actions.addTodo( 'Todo1', 'Content1', '13123', '1' ) ) )
+			.toEqual( [ '1' ] );
+		expect( reducers.orderReducer( [ '1' ], actions.addTodo( 'Todo2', 'Content2', '13123', '2' ) ) )
+			.toEqual( [ '1', '2' ] );
+		expect( reducers.orderReducer( [ '1', '2' ], actions.addTodo( 'Todo3', 'Content3', '13123', '3' ) ) )
+			.toEqual( [ '1', '2', '3' ] );
+		expect( reducers.orderReducer( [ '1', '2', '3' ], actions.addTodo( 'Todo3', 'Content3', '13123', '3' ) ) )
+			.toEqual( [ '1', '2', '3' ] ); // Ignore if ID exists already
+	} );
+
+	it( 'Removes ids from the order array when items are removed', () => {
+		expect( reducers.orderReducer( [ '1', '2', '3' ], actions.removeTodo( '1' ) ) )
+			.toEqual( [ '2', '3' ] );
+		expect( reducers.orderReducer( [ '1', '2', '3' ], actions.removeTodo( '2' ) ) )
+			.toEqual( [ '1', '3' ] );
+		expect( reducers.orderReducer( [ '1' ], actions.removeTodo( '1' ) ) )
+			.toEqual( [] );
+		expect( reducers.orderReducer( [ '1', '2', '3' ], actions.removeTodo( '5' ) ) )
+			.toEqual( [ '1', '2', '3' ] ); // Ignore if ID doesn't exist
+	} );
+
+	it( 'Change the order when reordering items', () => {
+		expect( reducers.orderReducer( [ '1', '2', '3' ], actions.reorderTodo( '1', 2 ) ) )
+			.toEqual( [ '2', '3', '1' ] );
+		expect( reducers.orderReducer( [ '1', '2', '3' ], actions.reorderTodo( '3', 0 ) ) )
+			.toEqual( [ '3', '1', '2' ] );
+		expect( reducers.orderReducer( [ '1', '2', '3' ], actions.reorderTodo( '1', 1 ) ) )
+			.toEqual( [ '2', '1', '3' ] );
+
+
+		expect( reducers.orderReducer( [ '1', '2', '3' ], actions.reorderTodo( '2', -1 ) ) )
+			.toEqual( [ '2', '1', '3' ] ); // Correct out of bounds position
+		expect( reducers.orderReducer( [ '1', '2', '3' ], actions.reorderTodo( '1', 5 ) ) )
+			.toEqual( [ '2', '3', '1' ] );
 	} );
 } );

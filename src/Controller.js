@@ -83,6 +83,17 @@ export class Controller {
 	}
 
 	/**
+	 * Reorder an item
+	 * @param {string} id Item ID
+	 * @param {number} position New position
+	 */
+	reorderTodo( id, position ) {
+		this.store.dispatch(
+			actions.reorderTodo( id, position )
+		);
+	}
+
+	/**
 	 * Toggle the complete status of an item
 	 *
 	 * @param  {[type]} id [description]

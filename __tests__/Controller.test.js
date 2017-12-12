@@ -7,6 +7,7 @@ describe( 'Controller', () => {
     	visibilityFilter: VisibilityFilters.SHOW_ALL,
 		visibleItems: [],
     	items: {},
+		order: [],
     	starred: []
     }
 

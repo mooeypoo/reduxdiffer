@@ -133,6 +133,62 @@ diff.ui.AddTaskWidget.prototype.reset = function () {
 	this.submitButton.setDisabled( true );
 };
 
+diff.ui.ReorderViewWidget = function DiffUiReorderViewWidget( controller, config ) {
+	config = config || {};
+
+	// Parent constructor
+	diff.ui.ReorderViewWidget.parent.call( this, config );
+
+	this.list = new OO.ui.ButtonGroupWidget( {
+		classes: [ 'diff-ui-reorderViewWidget-list' ]
+	} );
+
+	this.controller = controller;
+	// Suscribe to state change
+	this.controller.subscribe(
+		this,
+		[ 'order' ], // Path
+		'update' // Method
+	);
+
+	this.$element
+		.addClass( 'diff-ui-actionWidget' )
+		.append( this.list.$element );
+
+	this.update();
+};
+
+OO.inheritClass( diff.ui.ReorderViewWidget, OO.ui.Widget );
+
+diff.ui.ReorderViewWidget.prototype.update = function () {
+	var i, item,
+		itemsToRemove = [],
+		order = this.controller.getState( [ 'order' ] ),
+		stateItems = this.controller.getState( [ 'items' ] );
+
+	for ( i = 0; i < order.length; i++ ) {
+		item = this.list.getItemFromData( order[ i ] );
+		if ( !item ) {
+			// Create the item
+			item = new OO.ui.ButtonWidget( {
+				disabled: true,
+				framed: false,
+				data: order[ i ],
+				label: stateItems[ order[ i ] ].title
+			} );
+		}
+		// Insert in a new position
+		this.list.addItems( [ item ], i );
+
+	}
+
+	// Clean up the current items in case an item was removed
+	itemsToRemove = this.list.getItems().filter( function ( item ) {
+		return order.indexOf( item.getData() ) === -1;
+	} );
+	this.list.removeItems( itemsToRemove );
+};
+
 diff.ui.StateDisplayWidget = function DiffUiTaskItemWidet( controller, config ) {
 	config = config || {};
 
@@ -173,20 +229,19 @@ diff.ui.TaskGroupWidget = function DiffUiTaskGroupWidet( controller, config ) {
 	diff.ui.TaskGroupWidget.parent.call( this, config );
 	// Mixins
 	OO.ui.mixin.GroupWidget.call( this, config );
+	OO.ui.mixin.DraggableGroupElement.call( this, config );
 
 	this.controller = controller;
 
 	// Suscribe to state change
 	this.controller.subscribe(
 		this,
-		[ 'items' ], // Path
+		[ 'renderedItems' ], // Path
 		'update' // Method
 	);
-	this.controller.subscribe(
-		this,
-		[ 'visibleItems' ], // Path
-		'updateVisibility' // Method
-	);
+
+	// Events
+	this.connect( this, { reorder: 'onReorder' } );
 
 	this.$element
 		.addClass( 'diff-ui-taskGroupWidget' )
@@ -194,52 +249,35 @@ diff.ui.TaskGroupWidget = function DiffUiTaskGroupWidet( controller, config ) {
 
 	// Update based on initial state
 	this.update();
-	this.updateVisibility();
 };
 
 OO.inheritClass( diff.ui.TaskGroupWidget, OO.ui.Widget );
 OO.mixinClass( diff.ui.TaskGroupWidget, OO.ui.mixin.GroupWidget );
+OO.mixinClass( diff.ui.TaskGroupWidget, OO.ui.mixin.DraggableGroupElement );
 
 diff.ui.TaskGroupWidget.prototype.update = function () {
-	var state = this.controller.getState( [ 'items' ] ),
-		stateItemIDs = Object.keys( state ),
-		itemsToDelete = [],
-		itemsToAdd = [],
+	var renderedItems = this.controller.getState( [ 'renderedItems' ] ),
+		items = [],
 		widget = this;
 
-	// If the item isn't in the state, delete it
-	itemsToDelete = this.getItems().filter( function ( itemWidget ) {
-		// Return items that do not appear in the state
-		return stateItemIDs.indexOf( itemWidget.getID() ) === -1;
-	} );
-	this.removeItems( itemsToDelete );
+	this.clearItems();
 
-	// Add items from the state if they don't already exist
-	$.each( state, function ( itemID ) {
-		var item;
-		if ( !widget.getItemFromData( itemID ) ) {
-			item = new diff.ui.TaskItemWidget(
-				itemID,
-				widget.controller
-			);
-			item.toggle(
-				widget.controller.getState( [ 'visibilityFilter' ] ) !== 'SHOW_COMPLETED'
-			);
-			itemsToAdd.push( item );
-		}
+	renderedItems.forEach( function ( itemData ) {
+		items.push(
+			new diff.ui.TaskItemWidget( itemData.id, widget.controller )
+		);
 	} );
-	this.addItems( itemsToAdd );
+
+	this.addItems( items );
 };
 
-diff.ui.TaskGroupWidget.prototype.updateVisibility = function () {
-	var visibleItems = this.controller.getState( [ 'visibleItems' ] );
-
-	this.getItems().forEach( function ( itemWidget ) {
-		itemWidget.toggle( visibleItems.indexOf( itemWidget.getID() ) !== -1 );
-	} );
+diff.ui.TaskGroupWidget.prototype.onReorder = function ( item, position ) {
+	this.controller.reorderTodo( item.getID(), position );
 };
 
 diff.ui.TaskItemWidget = function DiffUiTaskItemWidet( id, controller, config ) {
+	var $handle = $( '<div>' )
+		.addClass( 'diff-ui-taskItemWidget-handle' );
 	config = config || {};
 
 	// Parent constructor
@@ -247,6 +285,7 @@ diff.ui.TaskItemWidget = function DiffUiTaskItemWidet( id, controller, config ) 
 	// Mixins
 	OO.ui.mixin.IconElement.call( this, config );
 	OO.ui.mixin.LabelElement.call( this, config );
+	OO.ui.mixin.DraggableElement.call( this, $.extend( { $handle: $handle }, config ) );
 
 	this.id = id;
 	this.controller = controller;
@@ -286,6 +325,7 @@ diff.ui.TaskItemWidget = function DiffUiTaskItemWidet( id, controller, config ) 
 	this.$element
 		.addClass( 'diff-ui-taskItemWidget' )
 		.append(
+			this.$handle,
 			this.$icon
 				.addClass( 'diff-ui-taskItemWidget-icon' ),
 			this.removeButton.$element,
@@ -302,12 +342,14 @@ diff.ui.TaskItemWidget = function DiffUiTaskItemWidet( id, controller, config ) 
 
 	// Update based on initial state
 	this.update();
+	this.updateStarred();
 };
 
 /* Initialization */
 OO.inheritClass( diff.ui.TaskItemWidget, OO.ui.Widget );
 OO.mixinClass( diff.ui.TaskItemWidget, OO.ui.mixin.IconElement );
 OO.mixinClass( diff.ui.TaskItemWidget, OO.ui.mixin.LabelElement );
+OO.mixinClass( diff.ui.TaskItemWidget, OO.ui.mixin.DraggableElement );
 
 /**
  * Update the widget

@@ -5,33 +5,50 @@ const { SHOW_ALL } = VisibilityFilters;
 const initialState = {
 		visibilityFilter: VisibilityFilters.SHOW_ALL,
 		visibleItems: [],
+		order: [],
 		items: {},
+		renderedItems: [],
 		starred: []
 	},
-	initialItemState = initialState.items;
+	initialItemState = initialState.items,
+	initialOrderState = initialState.order;
 
 
 /**
  * Combined reducer for the todo app
  *
- * @param  {Object} state Current state
- * @param  {Object} action Action definition
+ * @param	{Object} state Current state
+ * @param	{Object} action Action definition
  * @return {Object} New state
  */
 export function todoApp( state = initialState, action ) {
-	return {
+	const newState = {
 		visibilityFilter: visibilityReducer( state.visibilityFilter, action ),
 		visibleItems: visibleItemsReducer( state, action ),
+		order: orderReducer( state.order, action ),
 		items: itemsReducer( state.items, action ),
+		renderedItems: [],
 		starred: starredReducer( state.starred, action )
 	};
+
+	return Object.assign( {}, newState, { renderedItems: renderedItemsReducer( newState, action ) } );
 }
+
+export function renderedItemsReducer( state = initialState, action ) {
+	let items = [];
+
+	state.visibleItems.forEach( function ( id ) {
+		items[ state.order.indexOf( id ) ] = state.items[ id ];
+	} );
+
+	return items.filter( function ( data ) { return data !== null } );
+};
 
 /**
  * Visibility property reducer
  *
- * @param  {string} [state] Current state
- * @param  {Object} action Action definition
+ * @param	{string} [state] Current state
+ * @param	{Object} action Action definition
  * @return {string} New state
  */
 export function visibilityReducer( visibilityState = SHOW_ALL, action ) {
@@ -40,6 +57,48 @@ export function visibilityReducer( visibilityState = SHOW_ALL, action ) {
 			return action.filter;
 		default:
 			return visibilityState;
+	}
+}
+
+export function orderReducer( orderState = initialOrderState, action ) {
+	let currPosition, newPosition, order, newOrder;
+
+	switch ( action.type ) {
+		case actionTypes.REORDER_TODO:
+			// Get current position in the array
+			currPosition = orderState.indexOf( action.id );
+			// Normalize new position
+			newPosition = action.position;
+			if ( action.position < 0 ) {
+				newPosition = 0;
+			} else if ( action.position > orderState.length - 1 ) {
+				newPosition = orderState.length - 1;
+			}
+
+			order = [ ...orderState ];
+			order
+				.splice(
+					newPosition, // New position
+					0,
+					order.splice(
+						currPosition, // Old position
+						1
+					)[ 0 ]
+				);
+			return order;
+		case actionTypes.ADD_TODO:
+			// Add to end
+			if ( orderState.indexOf( action.id ) === -1 ) {
+				return [ ...orderState ].concat( action.id );
+			}
+			return orderState;
+		case actionTypes.REMOVE_TODO:
+			// Remove
+			return [ ...orderState ].filter( function ( id ) {
+				return id !== action.id;
+			} );
+		default:
+			return orderState;
 	}
 }
 
@@ -119,8 +178,8 @@ export function visibleItemsReducer( state = initialState, action ) {
 /**
  * Items reducer
  *
- * @param  {Object} state Current state
- * @param  {Object} action Action definition
+ * @param	{Object} state Current state
+ * @param	{Object} action Action definition
  * @return {Object} New state
  */
 export function itemsReducer( itemsState = initialItemState, action ) {
@@ -137,7 +196,6 @@ export function itemsReducer( itemsState = initialItemState, action ) {
 				title: action.title || '',
 				content: action.content || ''
 			}
-
 			return Object.assign( {}, itemsState, newItem );
 		case actionTypes.REMOVE_TODO:
 			state = Object.assign( {}, itemsState );
@@ -164,8 +222,8 @@ export function itemsReducer( itemsState = initialItemState, action ) {
 
 /**
  * Starred reducer
- * @param  {string[]}  [starredState=[]] [description]
- * @param  {Object} action Action definition
+ * @param	{string[]}	[starredState=[]] [description]
+ * @param	{Object} action Action definition
  * @return {string[]} New state
  */
 export function starredReducer( starredState = [], action ) {
